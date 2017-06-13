@@ -1,0 +1,8 @@
+{
+  "name": "redux-o-actions",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:grundiss/redux-o-actions.git",
+  "author": "grundiss <grundiss@gmail.com>",
+  "license": "MIT"
+}
