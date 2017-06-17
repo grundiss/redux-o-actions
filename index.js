@@ -75,3 +75,13 @@ export const withSideEffect = fn => class WithSideEffect extends AsyncAction {
   }
 };
 
+export const createReducer = (defaultValue, methodToRun, fallback = state => state) => (state = defaultValue, action) => {
+  if(
+    action.instance &&
+    action.instance[Action.IS_NICE_ACTION] === Action.IS_NICE_ACTION &&
+    typeof action.instance[methodToRun] === 'function'
+  ) {  
+    return action.instance[methodToRun](state);
+  } else return fallback(state);
+};
+
