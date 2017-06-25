@@ -1,8 +1,12 @@
 {
   "name": "redux-o-actions",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "main": "index.js",
   "repository": "git@github.com:grundiss/redux-o-actions.git",
   "author": "grundiss <grundiss@gmail.com>",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "reduce-reducers": "^0.1.2",
+    "redux": "^3.7.0"
+  }
 }

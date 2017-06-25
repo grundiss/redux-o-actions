@@ -1,3 +1,6 @@
+import { combineReducers as reduxCombineReducers } from 'redux';
+import reduceReducers from 'reduce-reducers';
+
 export const withNiceActions = store => next => action => {
   let newAction = {};
 
@@ -21,37 +24,18 @@ export class Action {
     this[Action.IS_NICE_ACTION] = Action.IS_NICE_ACTION;
 
     this.type = this.constructor;
+    this.instance = this;
     this.payload = this.create(o);
-
-    if(!this.constructor.__statisticsTracker) {
-      this.constructor.__statisticsTracker = new Map();
-    }
-    this.statistics();
-    this._statisticsOnce();
   }
 
   create(o) {
     return o;
   }
-
-  statistics() {}
-  statisticsOncePerLifetime() {}
-  statisticsOncePerPayload() {}
-
-  _statisticsOnce() {
-    if(!this.constructor.__statisticsTracker.has(this.constructor)) {
-      this.statisticsOncePerLifetime();
-
-      this.constructor.__statisticsTracker.set(this.constructor, 1);
-    }
-
-    if(!this.constructor.__statisticsTracker.has(JSON.stringify(this.payload))) {
-      this.statisticsOncePerPayload();
-
-      this.constructor.__statisticsTracker.set(this.payload || Object, 1);
-    }
-  }
 }
+
+export const NamedAction = name => class NamedAction extends Action {
+  static toString = () => name;
+};
 
 export class AsyncAction extends Action {
   constructor(o) {
@@ -75,13 +59,40 @@ export const withSideEffect = fn => class WithSideEffect extends AsyncAction {
   }
 };
 
-export const createReducer = (defaultValue, methodToRun, fallback = state => state) => (state = defaultValue, action) => {
-  if(
-    action.instance &&
-    action.instance[Action.IS_NICE_ACTION] === Action.IS_NICE_ACTION &&
-    typeof action.instance[methodToRun] === 'function'
-  ) {  
-    return action.instance[methodToRun](state);
-  } else return fallback(state);
-};
+export const createReducer = (defaultValue, methodToRun, fallback = state => state) =>
+  (state = defaultValue, action) => {
+    if(
+      action.instance &&
+      action.instance[Action.IS_NICE_ACTION] === Action.IS_NICE_ACTION &&
+      typeof action.instance[methodToRun] === 'function'
+    ) {
+      return action.instance[methodToRun](state);
+    } else return fallback(state);
+  };
 
+export class ReducerSymbol {
+  constructor(defaultValue, fallBackReducer = state => state) {
+    this.defaultValue = defaultValue;
+    this.fallBackReducer = fallBackReducer;
+    this.__symbol = Symbol();
+  }
+
+  asReducer() {
+    return createReducer(this.defaultValue, this.__symbol, this.fallBackReducer);
+  }
+
+  [Symbol.toPrimitive]() {
+    return this.__symbol;
+  }
+}
+
+export const combineReducers = (o, rootReducer = state => state) => reduceReducers(
+  reduxCombineReducers(Object.entries(o).reduce(
+    (accumulated, [name, reducerSymbol]) => ({
+      ...accumulated,
+      [name]: typeof reducerSymbol === 'function' ? reducerSymbol : reducerSymbol.asReducer()
+    }),
+    {}
+  )),
+  rootReducer
+);
