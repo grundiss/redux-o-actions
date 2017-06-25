@@ -1,31 +1,33 @@
 import { combineReducers as reduxCombineReducers } from 'redux';
 import reduceReducers from 'reduce-reducers';
 
-export const withNiceActions = store => next => action => {
-  let newAction = {};
-
-  if(action[Action.IS_NICE_ACTION]) {
-    newAction = {
+export const withNiceActions = ({ dispatch, getState }) => next => action => {
+  if(action[Action.IS_NICE_ACTION] === Action.IS_NICE_ACTION) {
+    const result = next({
       type: action.type,
       payload: action.payload,
       instance: action
-    };
-  } else {
-    newAction = action;
-  }
+    });
 
-  return next(newAction);
+    if(action[AsyncAction.IS_NICE_ASYNC_ACTION] === AsyncAction.IS_NICE_ASYNC_ACTION) {
+      action.dispatch(dispatch, getState);
+    }
+
+    return result;
+  } else {
+    return next(action);
+  }
 };
 
 export class Action {
   static IS_NICE_ACTION = Symbol();
 
   constructor(o) {
-    this[Action.IS_NICE_ACTION] = Action.IS_NICE_ACTION;
-
     this.type = this.constructor;
     this.instance = this;
     this.payload = this.create(o);
+
+    this[Action.IS_NICE_ACTION] = Action.IS_NICE_ACTION;
   }
 
   create(o) {
@@ -38,12 +40,12 @@ export const NamedAction = name => class NamedAction extends Action {
 };
 
 export class AsyncAction extends Action {
+  static IS_NICE_ASYNC_ACTION = Symbol();
+
   constructor(o) {
     super(o);
 
-    return (dispatch, getState) => {
-      this.dispatch(dispatch, getState);
-    };
+    this[AsyncAction.IS_NICE_ASYNC_ACTION] = AsyncAction.IS_NICE_ASYNC_ACTION;
   }
 
   dispatch(dispatch, getState) {
@@ -53,8 +55,6 @@ export class AsyncAction extends Action {
 
 export const withSideEffect = fn => class WithSideEffect extends AsyncAction {
   dispatch(dispatch, getState) {
-    dispatch(this);
-
     fn(dispatch, getState);
   }
 };
