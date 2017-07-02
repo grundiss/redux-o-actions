@@ -67,7 +67,7 @@ export const createReducer = (defaultValue, methodToRun, fallback = state => sta
       typeof action.instance[methodToRun] === 'function'
     ) {
       return action.instance[methodToRun](state);
-    } else return fallback(state);
+    } else return fallback(state, action);
   };
 
 export class ReducerSymbol {
