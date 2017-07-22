@@ -1,12 +1,22 @@
 {
   "name": "redux-o-actions",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "main": "index.js",
   "repository": "git@github.com:grundiss/redux-o-actions.git",
   "author": "grundiss <grundiss@gmail.com>",
   "license": "MIT",
+  "scripts": {
+    "build": "babel ./src/index.js -o ./index.js",
+    "example": "babel ./example/index.js -o ./example/build.js && node ./example/build.js"
+  },
   "dependencies": {
     "reduce-reducers": "^0.1.2",
     "redux": "^3.7.0"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.24.1",
+    "babel-plugin-syntax-async-functions": "^6.13.0",
+    "babel-plugin-transform-class-properties": "^6.24.1",
+    "babel-preset-es2017": "^6.24.1"
   }
 }
